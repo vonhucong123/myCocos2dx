@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
@@ -33,6 +33,7 @@ Scene* HelloWorld::createScene()
 }
 
 // Print useful error message instead of segfaulting when files are not there.
+// in thông báo lỗi khi file không tìm thấy
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
@@ -40,23 +41,59 @@ static void problemLoading(const char* filename)
 }
 
 // on "init" you need to initialize your instance
+// bạn cần init để khởi tạo các yêu cầu của bạn
 bool HelloWorld::init()
 {
     //////////////////////////////
     // 1. super init first
-    if ( !Scene::init() )
+    if (!Scene::init())
     {
         return false;
     }
 
+    // lấy size của màn hình 
+    // lấy kích thước màn hình. trả về height và width
+    // kiểu dữ liệu trả về cocos2d::size
     auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    // lấy gốc tọa độ của màn hình
+    // ở một số thiết bị điện thoại, gốc tọa độ không phải 0 0
+    // nên chúng ta cần lấy gốc tọa độ để tính chính xác vị trí
+    // kiểu dữ liệu trả về cocos2d::Vec2 x = 0; y = 0
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
+    // thêm background ở đây
+    // ? ảnh background lấy position là điểm góc bên trái trên cùng hay là ở trọng tâm của ảnh
+    auto background = Sprite::create("background.png");
+    background->setPosition(origin + visibleSize / 2);
+    this->addChild(background);
 
-    // add a "close" icon to exit the progress. it's an autorelease object
+    // thêm 1 nhân vật lên trên màn hình và tạo animation cho nhân vật
+    // tọa độ 104, 390.0f
+    auto character = Sprite::create("character/character_01.png");
+    character->setPosition({104.f, 390.0f});
+    this->addChild(character);
+
+    // tạo anime cho nhân vật
+    auto characterAnimation = Animation::create();
+    // hình ảnh trước và hình ảnh sau 0.15 giây
+    characterAnimation->setDelayPerUnit(0.15f);
+    // -1 nghiax laf animation chạy xong sẽ được lặp lại
+    characterAnimation->setLoops(-1);
+    characterAnimation->addSpriteFrame(Sprite::create("character/character_01.png")->getSpriteFrame());
+    characterAnimation->addSpriteFrame(Sprite::create("character/character_02.png")->getSpriteFrame());
+    characterAnimation->addSpriteFrame(Sprite::create("character/character_03.png")->getSpriteFrame());
+    characterAnimation->addSpriteFrame(Sprite::create("character/character_04.png")->getSpriteFrame());
+    characterAnimation->addSpriteFrame(Sprite::create("character/character_05.png")->getSpriteFrame());
+    characterAnimation->addSpriteFrame(Sprite::create("character/character_06.png")->getSpriteFrame());
+
+    // khởi tạo hoạt động lên anime
+    Animate* animate = Animate::create(characterAnimation);
+    // cho đối tượng character này paly action animate
+    character->runAction(animate);
+    /////////////////////////////
+    // 2. thêm một item menu với x. khi click vào nó sẽ tắt chương trình
+    // thêm một close icon để tắt chương trình. nó là một đối tượng autorelease
     auto closeItem = MenuItemImage::create(
                                            "CloseNormal.png",
                                            "CloseSelected.png",
@@ -102,19 +139,19 @@ bool HelloWorld::init()
     }
 
     // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    if (sprite == nullptr)
-    {
-        problemLoading("'HelloWorld.png'");
-    }
-    else
-    {
-        // position the sprite on the center of the screen
-        sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+    //auto sprite = Sprite::create("HelloWorld.png");
+    //if (sprite == nullptr)
+    //{
+    //    problemLoading("'HelloWorld.png'");
+    //}
+    //else
+    //{
+    //    // position the sprite on the center of the screen
+    //    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
 
-        // add the sprite as a child to this layer
-        this->addChild(sprite, 0);
-    }
+    //    // add the sprite as a child to this layer
+    //    this->addChild(sprite, 0);
+    //}
     return true;
 }
 
