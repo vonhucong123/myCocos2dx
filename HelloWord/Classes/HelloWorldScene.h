@@ -37,8 +37,15 @@ public:
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
     
+    // keyboad event
+    void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
+    void onKeyReleased(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event);
+
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
+
+    cocos2d::Sprite *character;
+
 };
 
 #endif // __HELLOWORLD_SCENE_H__
