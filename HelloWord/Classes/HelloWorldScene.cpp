@@ -70,7 +70,7 @@ bool HelloWorld::init()
 
     // thêm 1 nhân vật lên trên màn hình và tạo animation cho nhân vật
     // tọa độ 104, 390.0f
-    auto character = Sprite::create("character/character_01.png");
+    character = Sprite::create("character/character_01.png");
     character->setPosition({104.f, 390.0f});
     this->addChild(character);
 
@@ -91,6 +91,90 @@ bool HelloWorld::init()
     Animate* animate = Animate::create(characterAnimation);
     // cho đối tượng character này paly action animate
     character->runAction(animate);
+
+    // tạo bóng cho nhân vật
+    auto shadow = Sprite::create("character/shadow.png");
+    // x = vị trí giữa nhân vật, y = 10.5f
+    shadow->setPosition(Vec2(character->getContentSize().width / 2, 10.5f));
+    // xOrder = -1 là bên duois nhân vật
+    character->addChild(shadow, -1);
+
+    // tạo sự kiện touch và keyboqrd cho game
+    // B0 chuẩn bị cho một animationCache để tạo nanimation có thể sử dụng lại
+    // B1 lấy vị trí nhấp chuột
+    // B2 vẽ một hình ảnh tại điểm chuột
+
+    // -> B0
+    // tạo hành động như lai thần chưởng
+    auto skillAnimation = Animation::create();  
+    skillAnimation->setDelayPerUnit(0.15f);     // cho delay 0.15s
+    skillAnimation->setLoops(1);                // cho animation loop 1 lần
+    
+    for (int i = 1; i < 10; i++)                
+    {
+        skillAnimation->addSpriteFrame(Sprite::create("skill/attack" + std::to_string(i) + ".png")->getSpriteFrame());
+    }
+    const std::string k_skillAnimationName = "skillAnimation";      // đặt tên gọi skill
+    // add vaof cache khi naof cần gọi tên nó ra dùng, không tạo lại
+    AnimationCache::getInstance()->addAnimation(skillAnimation, k_skillAnimationName);
+
+    // tạo hành động 3 đường sấm sét
+    auto skill2Animation = Animation::create();
+    skill2Animation->setDelayPerUnit(0.15f);
+    skill2Animation->setLoops(1);
+    for (int i = 0; i < 18; i++)
+    {
+        skill2Animation->addSpriteFrame(Sprite::create("skill_02/skill_02_" + std::to_string(i) + ".png")->getSpriteFrame());
+    }
+    const std::string k_skill2AnimationName = "skill2Animation";
+    AnimationCache::getInstance()->addAnimation(skill2Animation, k_skill2AnimationName);
+    // end B1
+
+    
+    // tạo sự kiện tourch event
+    // cách 1 dùng lamda function 
+    // khởi tạo touch event của người chơi tại một điểm
+    auto touchListenner = EventListenerTouchOneByOne::create();
+    // khi bạn nhấn xuông
+    touchListenner->onTouchBegan = [](Touch* touch, Event* event)
+    {
+        // nơi chứa đoạn code của bạn
+        // có thể thêm hiệu ứng gì đấy khi nhấn xuông
+        return true;
+    };
+    // khi bạn vừa nhấn xuống vừa di chuyển
+    touchListenner->onTouchMoved = [](Touch* touch, Event* event)
+    {
+        // code cho hiệu ứng đoạn này
+    };
+    // khi bạn nhả tay ra
+    touchListenner->onTouchEnded = [=](Touch* touch, Event* event)
+    {
+        // nơi chứa đoạn code của bạn
+        auto skill = Sprite::create("skill/attack1.png");
+        skill->setPosition(touch->getLocation());
+        this->addChild(skill);
+
+        Animate* animate = Animate::create(AnimationCache::getInstance()->getAnimation("skillAnimation"));
+
+        // play xong animation, ta sẽ xóa skill đi khỏi màn hình bằng action
+        skill->runAction(Sequence::createWithTwoActions(animate, RemoveSelf::create()));
+    };
+    // thêm Touch event vào cơ chế Event Dispatch
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListenner, this);
+
+
+    // tạo keyboard event.
+    auto keyBoardListener = EventListenerKeyboard::create();
+    keyBoardListener->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
+    keyBoardListener->onKeyReleased = CC_CALLBACK_2(HelloWorld::onKeyReleased, this);
+    // Thêm keyboar event vào cơ chế event dispatcher.
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyBoardListener, this);
+
+    // Di chuyển nhân vật từ vị trí hiện tại, đến vị trí(1020, 390) trong thời gian 5 giây
+    character->runAction(MoveTo::create(5.0f, Point(1020.f, 390.0f)));
+
+
     /////////////////////////////
     // 2. thêm một item menu với x. khi click vào nó sẽ tắt chương trình
     // thêm một close icon để tắt chương trình. nó là một đối tượng autorelease
@@ -137,21 +221,6 @@ bool HelloWorld::init()
         // add the label as a child to this layer
         this->addChild(label, 1);
     }
-
-    // add "HelloWorld" splash screen"
-    //auto sprite = Sprite::create("HelloWorld.png");
-    //if (sprite == nullptr)
-    //{
-    //    problemLoading("'HelloWorld.png'");
-    //}
-    //else
-    //{
-    //    // position the sprite on the center of the screen
-    //    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-    //    // add the sprite as a child to this layer
-    //    this->addChild(sprite, 0);
-    //}
     return true;
 }
 
@@ -168,3 +237,40 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
 
 
 }
+
+void HelloWorld::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
+{
+    if (keyCode == EventKeyboard::KeyCode::KEY_A) 
+    {
+       //auto ss = character->getPosition();
+       //character->runAction(MoveTo::create(0.1f, ss + Point(-30, 0)));
+
+       // nơi chứa đoạn code của bạn
+       auto skill1 = Sprite::create("skill_02/skill_02_0.png");
+       auto skill2 = Sprite::create("skill_02/skill_02_0.png");
+       auto skill3 = Sprite::create("skill_02/skill_02_0.png");
+
+       skill1->setPosition(character->getPosition() + Vec2(+10, 0));
+       skill1->setPosition(character->getPosition() + Vec2(+10, +30));
+       skill1->setPosition(character->getPosition() + Vec2(+20, +10));
+
+       this->addChild(skill1);
+       this->addChild(skill2);
+       this->addChild(skill3);
+
+       Animate* animate1 = Animate::create(AnimationCache::getInstance()->getAnimation("skill2Animation"));
+       Animate* animate2 = Animate::create(AnimationCache::getInstance()->getAnimation("skill2Animation"));
+       Animate* animate3 = Animate::create(AnimationCache::getInstance()->getAnimation("skill2Animation"));
+
+       // play xong animation, ta sẽ xóa skill đi khỏi màn hình bằng action
+       skill1->runAction(Sequence::createWithTwoActions(animate1, RemoveSelf::create()));
+       skill2->runAction(Sequence::createWithTwoActions(animate2, RemoveSelf::create()));
+       skill3->runAction(Sequence::createWithTwoActions(animate3, RemoveSelf::create()));
+    }
+}
+
+void HelloWorld::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
+{
+}
+
+
