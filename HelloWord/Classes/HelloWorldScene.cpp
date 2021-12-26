@@ -207,6 +207,9 @@ bool HelloWorld::init()
     // add a label shows "Hello World"
     // create and initialize a label
 
+    // cách để xem một giá trị trong quá trình debug
+    CCLOG("thu can hien thi: ");
+
     auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
     if (label == nullptr)
     {
